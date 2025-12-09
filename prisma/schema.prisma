@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String?
+  image     String?
+  emailVerified DateTime?
+  createdAt DateTime @default(now())
+
+  products  Product[]
+  purchases ProductPurchase[]
+
+  accounts Account[]
+  sessions Session[]
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  price       Int
+  thumbnail   String?
+  features    String[] // Optional: Array of features
+  fileUrl     String // Link to downloadable file
+  createdAt   DateTime @default(now())
+
+  sellerId String
+  seller   User   @relation(fields: [sellerId], references: [id])
+
+  purchases ProductPurchase[]
+}
+
+model ProductPurchase {
+  id        String   @id @default(uuid())
+  productId String
+  buyerId   String
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id])
+  buyer   User    @relation(fields: [buyerId], references: [id])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id])
+}
