@@ -1,5 +1,7 @@
 import prisma from "../../../lib/prisma";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
 
 //get all products
 export async function GET() {
@@ -13,6 +15,7 @@ export async function GET() {
       },
       orderBy: { createdAt: "desc" },
     });
+    return NextResponse.json(products, { status: 200 });
   } catch (error) {
     console.error("GET /products error:", error);
     return NextResponse.json(
@@ -21,9 +24,6 @@ export async function GET() {
     );
   }
 }
-//create product
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
 
 //create product
 export async function POST(req: Request) {
@@ -35,16 +35,9 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
-    
+
     const body = await req.json();
-    const {
-      title,
-      description,
-      price,
-      thumbnail,
-      features,
-      fileUrl,
-    } = body;
+    const { title, description, price, thumbnail, features, fileUrl } = body;
 
     if (!title || !price || !fileUrl) {
       return NextResponse.json(
